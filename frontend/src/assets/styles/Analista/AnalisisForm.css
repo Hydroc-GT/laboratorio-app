@@ -1,0 +1,252 @@
+.analisis-form-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 25px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header de formulario */
+.form-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Mejor estilo tipo container para AnalisisForm */
+.analisis-form-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 2.5rem 3vw;
+    margin: 2rem auto;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.parametros-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.param-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-bottom: 1.2rem;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.param-item label {
+    min-width: 180px;
+    font-weight: 500;
+    color: #333;
+}
+
+.param-item input[type="text"] {
+    width: 110px;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #bdbdbd;
+    background: #fff;
+}
+
+.param-item input[type="checkbox"] {
+        margin-left: 0;
+}
+
+.cumple-norma-row {
+    display: flex;
+    align-items: center;
+    margin-left: 1.5rem;
+}
+
+.cumple-norma-checkbox {
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.aptitud-section {
+    margin-bottom: 2rem;
+    font-weight: 500;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.submission-status {
+    margin-top: 1.5rem;
+    font-weight: 500;
+    color: #1976d2;
+}
+.parametros-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.parametro-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.parametro-input:focus {
+    border-color: #2196f3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.resultado-row {
+    display: flex;
+    align-items: center;
+}
+
+.resultado-valor {
+    flex: 1;
+}
+
+.resultado-estado {
+    margin-left: 15px;
+    width: 80px;
+}
+
+.estado-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.resultado-global {
+    margin-top: 25px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+}
+
+.resultado-global-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.global-options {
+    display: flex;
+    gap: 15px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+}
+
+.radio-option input {
+    margin-right: 8px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 25px;
+    gap: 15px;
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    background-color: #f5f5f5;
+    color: #444;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancel-btn:hover {
+    background-color: #e5e5e5;
+}
+
+.submit-btn {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-btn:hover {
+    background-color: #45a049;
+}
+
+.error-msg {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.success-msg {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Range value styling for parameters with min/max */
+.range-value {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Invalid value styling */
+.invalid-value {
+    border-color: #d32f2f;
+    background-color: #ffebee;
+}
+
+.warning-icon {
+    color: #ff9800;
+    margin-left: 8px;
+    font-size: 16px;
+}
+
+/* Loading state */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .analisis-form-container {
+        padding: 15px;
+    }
+    
+    .info-row {
+        flex-direction: column;
+    }
+    
+    .info-label {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .parametros-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

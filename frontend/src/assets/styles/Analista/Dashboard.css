@@ -1,0 +1,177 @@
+.dashboard-container {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    font-family: sans-serif;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.card-list {
+    flex: 1;
+    background-color: #f4f4f4;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.analista-checkbox {
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.muestras-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+    /* Mejor espaciado y presentación para el dashboard del analista */
+    .dashboard-container {
+        padding: 2rem 4vw;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dashboard-title {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        font-weight: 700;
+        color: #1a237e;
+    }
+
+    .muestra-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        padding: 1.2rem 2rem;
+    }
+
+    .muestra-codigo {
+        font-weight: bold;
+        width: 200px;
+        margin-right: 0.5rem;
+        color: #1565c0;
+    }
+
+    .muestra-select {
+        margin-right: 0.5rem;
+        min-width: 180px;
+        padding: 0.4rem 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #bdbdbd;
+        background: #f5f5f5;
+    }
+
+    .muestra-comentario {
+        flex: 1;
+        margin-right: 0.5rem;
+        min-width: 240px;
+        padding: 0.4rem 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #bdbdbd;
+        background: #f5f5f5;
+    }
+
+    .muestra-asignar-btn {
+        min-width: 130px;
+        background: #1976d2;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.4rem;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 1px 4px rgba(25, 118, 210, 0.08);
+    }
+    .muestra-asignar-btn:hover {
+        background: #0d47a1;
+        color: #fff;
+    }
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    margin-right: 5px;
+}
+
+.analizar-btn {
+    background-color: #4caf50;
+    color: white;
+}
+
+.analizar-btn:hover {
+    background-color: #45a049;
+}
+
+.detalles-btn {
+    background-color: #2196f3;
+    color: white;
+}
+
+.detalles-btn:hover {
+    background-color: #0b7dda;
+}
+
+.comentarios {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666;
+    font-style: italic;
+}
+
+.comentarios-badge {
+    background-color: #ffe0b2;
+    color: #e65100;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 5px;
+}

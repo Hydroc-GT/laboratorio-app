@@ -1,22 +1,30 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/auth'; 
+// Asegúrate de que este sea el puerto de tu backend
+const API_URL = 'http://localhost:3001/api/auth'; 
 
-export const login = async (email, password) => {
-    try {
-        const response = await axios.post(`${API_URL}/login`, { email, password });
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : { message: 'Network error' };
-    }
+// El registro ahora incluye el rol
+export const register = async (userData) => {
+    // userData debe ser un objeto como { nombre, correo, contrasena, idRol }
+    const response = await axios.post(`${API_URL}/register`, userData);
+    return response.data;
 };
 
-export const register = async (email, password) => {
-    try {
-        const response = await axios.post(`${API_URL}/register`, { email, password });
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : { message: 'Network error' };
+export const login = async (credentials) => {
+    // credentials debe ser un objeto como { correo, contrasena }
+    const response = await axios.post(`${API_URL}/login`, credentials);
+    // Guarda el token en localStorage para mantener la sesión
+    if (response.data.token) {
+        localStorage.setItem('user', JSON.stringify(response.data));
     }
+    return response.data;
+};
+
+export const logout = () => {
+    localStorage.removeItem('user');
+};
+
+export const getCurrentUser = () => {
+    return JSON.parse(localStorage.getItem('user'));
 };
 

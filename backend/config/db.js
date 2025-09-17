@@ -6,7 +6,7 @@ const sql = require('mssql');
 const dbConfig = {
   user: 'sa',
   password: 'ninjassj4',
-  server: 'DESKTOP-2U77AUM\\DEVSERVER',
+  server: 'FELIPE-LAPTOP\\PRUEBAS',
   database: 'LaboratorioControlCalidad',
   options: {
     encrypt: false,
