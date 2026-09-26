@@ -48,23 +48,6 @@ graph TD
 
 ---
 
-## 🔄 Ciclo de Vida de una Muestra
-
-```mermaid
-stateDiagram-v2
-    [*] --> Recibida: Recepción / Registro (Rol 2)
-    Recibida --> EnAnalisis: Supervisor asigna Analista (Rol 4)
-    EnAnalisis --> Evaluada: Analista completa parámetros y aprueba (Rol 3)
-    EnAnalisis --> Rechazada: Muestra no cumple norma / no apta (Rol 3)
-    Evaluada --> Certificada: Validador revisa PDF y aprueba certificado (Rol 4)
-    Evaluada --> Devuelta: Validador devuelve muestra con observaciones (Rol 4)
-    Devuelta --> EnAnalisis: Analista reevalúa según comentarios
-    Certificada --> [*]
-    Rechazada --> [*]
-```
-
----
-
 ## 👥 Matriz de Roles y Accesos (RBAC)
 
 | IdRol | Rol | Módulos y Permisos |
@@ -106,13 +89,7 @@ cd laboratorio-app
 
 ---
 
-### 2. Configurar la Base de Datos
-1. Abre SQL Server Management Studio (SSMS) o Azure Data Studio.
-2. Ejecuta el script completo [schema.sql](schema.sql) para crear la base de datos `LaboratorioControlCalidad`, tablas, procedimientos almacenados y datos iniciales de tipos de muestra y normas.
-
----
-
-### 3. Configurar y Ejecutar el Backend
+### 2. Configurar y Ejecutar el Backend
 ```bash
 cd backend
 npm install
@@ -143,7 +120,7 @@ npm start
 
 ---
 
-### 4. Configurar y Ejecutar el Frontend
+### 3. Configurar y Ejecutar el Frontend
 En otra terminal:
 ```bash
 cd frontend
@@ -165,19 +142,6 @@ Inicia el cliente React:
 npm start
 ```
 > La aplicación se abrirá en `http://localhost:3000`.
-
----
-
-## 🔑 Credenciales de Prueba
-
-Para demostración rápida o pruebas de evaluación, puedes utilizar las siguientes cuentas preconfiguradas:
-
-| Rol | Correo Electrónico | Contraseña |
-| :--- | :--- | :--- |
-| **Administrador** | `admin@laboratorio.com` | `Admin123!` |
-| **Supervisor / Validador** | `validador@laboratorio.com` | `Validador123!` |
-| **Analista Químico** | `analista@laboratorio.com` | `Analista123!` |
-| **Recepción / Registro** | `registro@lab.com` | *(creado en schema inicial)* |
 
 ---
 
@@ -206,8 +170,3 @@ laboratorio-app/
 ├── .gitignore            # Exclusión de .env, node_modules y PDFs temporales
 └── README.md             # Documentación técnica
 ```
-
----
-
-## 📄 Licencia
-Este proyecto fue desarrollado con fines demostrativos, académicos y profesionales para gestión y control de calidad en laboratorios.
