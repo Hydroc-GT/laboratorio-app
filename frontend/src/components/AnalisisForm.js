@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import '../assets/styles/Analista/AnalisisForm.css';
+import { getParametrosPorMuestra, enviarResultados } from '../services/muestras';
 
 function AnalisisForm() {
   const { idMuestra } = useParams();
@@ -17,9 +17,7 @@ function AnalisisForm() {
   useEffect(() => {
     const fetchParametros = async () => {
       try {
-        console.log(`Fetching parameters for sample ID: ${idMuestra}`);
-        const response = await axios.get(`http://localhost:3001/api/analista/parametros/${idMuestra}`);
-        console.log('Received parameters:', response.data);
+        const response = await getParametrosPorMuestra(idMuestra);
         const fetchedParametros = response.data;
         setParametros(fetchedParametros);
 
@@ -43,30 +41,49 @@ function AnalisisForm() {
   }, [idMuestra]);
 
   const handleInputChange = (id, field, value) => {
-    setValores(prevValores => ({
-      ...prevValores,
-      [id]: {
-        ...prevValores[id],
-        [field]: value
-      }
-    }));
-
-    // Validación en tiempo real para el campo valorObtenido
     if (field === 'valorObtenido') {
       const param = parametros.find(p => p.IdParametroNorma === id);
       let errorMsg = '';
-      if (value === '' || isNaN(Number(value))) {
-        errorMsg = `Debe ingresar un valor numérico.`;
-      } else {
+      let autoCumple = false;
+
+      if (value !== '' && !isNaN(Number(value))) {
         const numValor = Number(value);
-        if (typeof param.ValorMinimo === 'number' && numValor < param.ValorMinimo) {
-          errorMsg = `No puede ser menor que ${param.ValorMinimo}.`;
+        const minVal = param?.ValorMinimo !== undefined ? param?.ValorMinimo : param?.ValorMin;
+        const maxVal = param?.ValorMaximo !== undefined ? param?.ValorMaximo : param?.ValorMax;
+
+        let withinRange = true;
+        if (typeof minVal === 'number' && numValor < minVal) {
+          errorMsg = `No puede ser menor que ${minVal}.`;
+          withinRange = false;
         }
-        if (typeof param.ValorMaximo === 'number' && numValor > param.ValorMaximo) {
-          errorMsg = `No puede ser mayor que ${param.ValorMaximo}.`;
+        if (typeof maxVal === 'number' && numValor > maxVal) {
+          errorMsg = `No puede ser mayor que ${maxVal}.`;
+          withinRange = false;
         }
+
+        autoCumple = withinRange;
+      } else if (value !== '') {
+        errorMsg = `Debe ingresar un valor numérico.`;
       }
+
+      setValores(prevValores => ({
+        ...prevValores,
+        [id]: {
+          ...prevValores[id],
+          valorObtenido: value,
+          cumple: autoCumple
+        }
+      }));
+
       setParamErrors(prev => ({ ...prev, [id]: errorMsg }));
+    } else {
+      setValores(prevValores => ({
+        ...prevValores,
+        [id]: {
+          ...prevValores[id],
+          [field]: value
+        }
+      }));
     }
   };
 
@@ -83,11 +100,13 @@ function AnalisisForm() {
         errores.push(`El parámetro "${valores[key].nombreParametro}" debe tener un valor numérico.`);
       } else {
         const numValor = Number(valor);
-        if (typeof param.ValorMinimo === 'number' && numValor < param.ValorMinimo) {
-          errores.push(`El parámetro "${valores[key].nombreParametro}" no puede ser menor que ${param.ValorMinimo}.`);
+        const minVal = param.ValorMinimo !== undefined ? param.ValorMinimo : param.ValorMin;
+        const maxVal = param.ValorMaximo !== undefined ? param.ValorMaximo : param.ValorMax;
+        if (typeof minVal === 'number' && numValor < minVal) {
+          errores.push(`El parámetro "${valores[key].nombreParametro}" no puede ser menor que ${minVal}.`);
         }
-        if (typeof param.ValorMaximo === 'number' && numValor > param.ValorMaximo) {
-          errores.push(`El parámetro "${valores[key].nombreParametro}" no puede ser mayor que ${param.ValorMaximo}.`);
+        if (typeof maxVal === 'number' && numValor > maxVal) {
+          errores.push(`El parámetro "${valores[key].nombreParametro}" no puede ser mayor que ${maxVal}.`);
         }
       }
     });
@@ -105,7 +124,7 @@ function AnalisisForm() {
     }));
 
     try {
-      await axios.post('http://localhost:3001/api/analista/resultados', {
+      await enviarResultados({
         idMuestra: parseInt(idMuestra),
         resultados: resultadosParaEnviar,
         aptoConsumo
@@ -131,14 +150,14 @@ function AnalisisForm() {
             <li key={param.IdParametroNorma} className="param-item">
               <label>
                 {param.NombreParametro} ({param.Unidad})
-                {typeof param.ValorMinimo === 'number' &&
+                {typeof (param.ValorMinimo !== undefined ? param.ValorMinimo : param.ValorMin) === 'number' &&
                   <span style={{ marginLeft: '10px', color: '#888' }}>
-                    Mín: {param.ValorMinimo}
+                    Mín: {param.ValorMinimo !== undefined ? param.ValorMinimo : param.ValorMin}
                   </span>
                 }
-                {typeof param.ValorMaximo === 'number' &&
+                {typeof (param.ValorMaximo !== undefined ? param.ValorMaximo : param.ValorMax) === 'number' &&
                   <span style={{ marginLeft: '10px', color: '#888' }}>
-                    Máx: {param.ValorMaximo}
+                    Máx: {param.ValorMaximo !== undefined ? param.ValorMaximo : param.ValorMax}
                   </span>
                 }
               </label>
@@ -154,7 +173,7 @@ function AnalisisForm() {
                 </div>
               }
               <span className="cumple-norma-row">
-                <span style={{marginRight: '0.5rem'}}>Cumple Norma</span>
+                <span style={{ marginRight: '0.5rem' }}>Cumple Norma</span>
                 <input
                   type="checkbox"
                   checked={valores[param.IdParametroNorma]?.cumple || false}

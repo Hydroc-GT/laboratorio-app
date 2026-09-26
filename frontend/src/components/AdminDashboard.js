@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, Routes, Route, useNavigate, useResolvedPath } from 'react-router-dom';
+import { NavLink, Routes, Route, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../services/api';
 import '../App.css';
 
 const UsersRoles = () => {
@@ -12,7 +12,7 @@ const UsersRoles = () => {
   const fetchUsuarios = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:3001/api/auth/listar');
+      const res = await api.get('/auth/listar');
       setUsuarios(res.data);
     } catch (err) {
       setError('Error al cargar usuarios');
@@ -26,7 +26,7 @@ const UsersRoles = () => {
 
   const handleEstadoChange = async (idUsuario, nuevoEstado) => {
     try {
-      await axios.put(`http://localhost:3001/api/auth/estado/${idUsuario}`, { Estado: nuevoEstado });
+      await api.put(`/auth/estado/${idUsuario}`, { Estado: nuevoEstado });
       setUsuarios(usuarios => usuarios.map(u => u.IdUsuario === idUsuario ? { ...u, Estado: nuevoEstado } : u));
     } catch (err) {
       setError('No se pudo cambiar el estado');
@@ -116,7 +116,7 @@ const AuditLog = () => {
       if (filtro.fechaFin) queryParams.append('fechaFin', filtro.fechaFin);
 
       // Obtener logs del backend
-      const res = await axios.get(`http://localhost:3001/api/auditoria/logs?${queryParams}`);
+      const res = await api.get(`/auditoria/logs?${queryParams}`);
       setLogs(res.data);
     } catch (err) {
       setError('Error al cargar los registros de auditoría');
@@ -127,6 +127,7 @@ const AuditLog = () => {
 
   useEffect(() => {
     fetchAuditLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtro.usuario, filtro.accion, filtro.fechaInicio, filtro.fechaFin]);
 
   const handleFiltroChange = (e) => {
@@ -145,9 +146,9 @@ const AuditLog = () => {
   return (
     <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 16px rgba(0,0,0,0.07)', padding: 32, maxWidth: 1100, margin: '0 auto' }}>
       <h3 style={{ marginBottom: 24, color: '#1976d2', fontWeight: 600 }}>Auditoría de Actividades del Sistema</h3>
-      
+
       {error && <p style={{ color: 'red', marginBottom: 16 }}>{error}</p>}
-      
+
       {/* Filtros */}
       <div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 16, background: '#f6f8fa', padding: 16, borderRadius: 8 }}>
         <div style={{ flex: '1 1 200px' }}>
@@ -198,7 +199,7 @@ const AuditLog = () => {
           />
         </div>
       </div>
-      
+
       {/* Tabla de logs */}
       {loading ? <p>Cargando registros...</p> : (
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, background: '#fafbfc', borderRadius: 8, overflow: 'hidden' }}>
@@ -224,13 +225,13 @@ const AuditLog = () => {
                       display: 'inline-block',
                       padding: '4px 12px',
                       borderRadius: 12,
-                      background: log.Accion?.toLowerCase().includes('sesión') ? '#e3f2fd' : 
-                                log.Accion?.toLowerCase().includes('muestra') ? '#e8f5e9' : 
-                                log.Accion?.toLowerCase().includes('resultado') ? '#fffde7' :
-                                log.Accion?.toLowerCase().includes('usuario') ? '#fce4ec' : '#f3e5f5',
-                      color: log.Accion?.toLowerCase().includes('sesión') ? '#0d47a1' : 
-                            log.Accion?.toLowerCase().includes('muestra') ? '#1b5e20' : 
-                            log.Accion?.toLowerCase().includes('resultado') ? '#f57f17' :
+                      background: log.Accion?.toLowerCase().includes('sesión') ? '#e3f2fd' :
+                        log.Accion?.toLowerCase().includes('muestra') ? '#e8f5e9' :
+                          log.Accion?.toLowerCase().includes('resultado') ? '#fffde7' :
+                            log.Accion?.toLowerCase().includes('usuario') ? '#fce4ec' : '#f3e5f5',
+                      color: log.Accion?.toLowerCase().includes('sesión') ? '#0d47a1' :
+                        log.Accion?.toLowerCase().includes('muestra') ? '#1b5e20' :
+                          log.Accion?.toLowerCase().includes('resultado') ? '#f57f17' :
                             log.Accion?.toLowerCase().includes('usuario') ? '#880e4f' : '#4a148c',
                       fontWeight: 500,
                       fontSize: 13
@@ -250,8 +251,7 @@ const AuditLog = () => {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const base = useResolvedPath("").pathname;
-  const { logout } = useAuth();
+  const { usuario, logout } = useAuth();
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f6f8fa' }}>
       {/* Sidebar */}
@@ -265,12 +265,12 @@ const AdminDashboard = () => {
         padding: '0',
         boxShadow: '2px 0 8px rgba(0,0,0,0.07)'
       }}>
-        <div style={{ 
-          width: '100%', 
-          background: '#16202b', 
-          padding: '32px 0 18px 0', 
-          textAlign: 'center', 
-          borderBottom: '1px solid #22304a' 
+        <div style={{
+          width: '100%',
+          background: '#16202b',
+          padding: '32px 0 18px 0',
+          textAlign: 'center',
+          borderBottom: '1px solid #22304a'
         }}>
           <div style={{ fontWeight: 700, fontSize: 22, letterSpacing: 1, color: '#fff' }}>
             Laboratorio-App
@@ -279,9 +279,9 @@ const AdminDashboard = () => {
 
         <div style={{ width: '100%', marginTop: 30 }}>
           {/* Ruta absoluta para usuarios */}
-          <NavLink 
-            to="/admin/users" 
-            end 
+          <NavLink
+            to="/admin/users"
+            end
             style={({ isActive }) => ({
               display: 'block',
               padding: '14px 32px',
@@ -297,9 +297,9 @@ const AdminDashboard = () => {
           </NavLink>
 
           {/* Ruta absoluta para auditoría */}
-          <NavLink 
-            to="/admin/audit" 
-            end 
+          <NavLink
+            to="/admin/audit"
+            end
             style={({ isActive }) => ({
               display: 'block',
               padding: '14px 32px',
@@ -314,33 +314,54 @@ const AdminDashboard = () => {
             Auditoría
           </NavLink>
         </div>
-
-        <button 
-          style={{ 
-            marginTop: 'auto', 
-            marginBottom: 32, 
-            width: '80%', 
-            padding: 12, 
-            borderRadius: 8, 
-            border: 'none', 
-            background: '#1976d2', 
-            color: '#fff', 
-            cursor: 'pointer', 
-            fontWeight: 500, 
-            fontSize: 15, 
-            boxShadow: '0 2px 8px rgba(25,118,210,0.07)' 
-          }} 
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-        >
-          Cerrar sesión
-        </button>
       </nav>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '48px 32px', minHeight: '100vh', background: '#f6f8fa' }}>
+      <main style={{ flex: 1, padding: '24px 36px', minHeight: '100vh', background: '#f6f8fa' }}>
+        {/* Píldora compacta de usuario y cerrar sesión arriba a la derecha */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 12,
+            background: '#fff',
+            padding: '6px 14px',
+            borderRadius: 24,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+            border: '1px solid #e3e8ee'
+          }}>
+            <span style={{ fontSize: 13, color: '#555', display: 'inline-flex', alignItems: 'center', lineHeight: '1' }}>
+              <strong style={{ color: '#1976d2' }}>{usuario?.Correo || 'admin@laboratorio.com'}</strong>
+            </span>
+            <button
+              style={{
+                width: 'auto',
+                margin: 0,
+                padding: '6px 14px',
+                borderRadius: 16,
+                border: 'none',
+                background: '#d32f2f',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: 12,
+                lineHeight: '1',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 4px rgba(211,47,47,0.25)',
+                transition: 'background 0.2s'
+              }}
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
         <Routes>
           <Route path="users" element={<UsersRoles />} />
           <Route path="audit" element={<AuditLog />} />

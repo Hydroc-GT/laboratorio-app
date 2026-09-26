@@ -21,8 +21,8 @@ const Login = () => {
                 setError('Usuario inactivo. Contacte al administrador.');
                 return;
             }
-            // Usar el método login del contexto
-            login(res.usuario);
+            // Usar el método login del contexto pasando usuario y token JWT
+            login(res.usuario, res.token);
             if (idRol === 2) {
                 navigate('/register-muestra');
             } else if (idRol === 3) {

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import '../assets/styles/Validador/Dashboard.css';
+import {
+  getDashboardValidador,
+  asignarAnalista,
+  aprobarMuestra,
+  desaprobarMuestra
+} from '../services/muestras';
 
 function ValidadorDashboard() {
   const [data, setData] = useState({
@@ -19,7 +24,7 @@ function ValidadorDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/validador/dashboard');
+        const response = await getDashboardValidador();
         setData(response.data);
       } catch (err) {
         setError("No se pudieron cargar los datos del dashboard.");
@@ -42,18 +47,20 @@ function ValidadorDashboard() {
   const handleAsignarClick = async (idMuestra) => {
     setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Asignando..." }));
     try {
-      await axios.post('http://localhost:3001/api/validador/asignar-analista', {
+      await asignarAnalista({
         idMuestra,
         idAnalista: selectedAnalyst[idMuestra],
-        comentarios: comments[idMuestra] || '' // Enviar los comentarios desde el estado
+        comentarios: comments[idMuestra] || ''
       });
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Asignado con éxito" }));
       // Recargar datos o actualizar estado localmente
       const newData = { ...data };
       const muestra = newData.porAsignar.find(m => m.IdMuestra === idMuestra);
-      muestra.Estado = 'En análisis';
-      newData.porAprobar.push(muestra); // Si el flujo lo permite
-      newData.porAsignar = newData.porAsignar.filter(m => m.IdMuestra !== idMuestra);
+      if (muestra) {
+        muestra.Estado = 'En análisis';
+        newData.porAprobar.push(muestra);
+        newData.porAsignar = newData.porAsignar.filter(m => m.IdMuestra !== idMuestra);
+      }
       setData(newData);
     } catch (err) {
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Error al asignar" }));
@@ -64,13 +71,15 @@ function ValidadorDashboard() {
   const handleAprobarClick = async (idMuestra) => {
     setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Aprobando..." }));
     try {
-      await axios.post('http://localhost:3001/api/validador/aprobar', { idMuestra });
+      await aprobarMuestra(idMuestra);
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Aprobado con éxito" }));
       const newData = { ...data };
       const muestra = newData.porAprobar.find(m => m.IdMuestra === idMuestra);
-      muestra.Estado = 'Certificada';
-      newData.historial.push(muestra);
-      newData.porAprobar = newData.porAprobar.filter(m => m.IdMuestra !== idMuestra);
+      if (muestra) {
+        muestra.Estado = 'Certificada';
+        newData.historial.push(muestra);
+        newData.porAprobar = newData.porAprobar.filter(m => m.IdMuestra !== idMuestra);
+      }
       setData(newData);
     } catch (err) {
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Error al aprobar" }));
@@ -81,18 +90,15 @@ function ValidadorDashboard() {
   const handleDesaprobarClick = async (idMuestra) => {
     setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Desaprobando..." }));
     try {
-      // Necesitas un campo para los comentarios al desaprobar
-      await axios.post('http://localhost:3001/api/validador/desaprobar', {
-        idMuestra,
-        comentarios: comments[idMuestra] || 'Muestra devuelta por el validador'
-      });
+      await desaprobarMuestra(idMuestra, comments[idMuestra] || 'Muestra devuelta por el validador');
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Desaprobado con éxito" }));
-      // Recargar o actualizar localmente
       const newData = { ...data };
       const muestra = newData.porAprobar.find(m => m.IdMuestra === idMuestra);
-      muestra.Estado = 'Devuelta';
-      newData.historial.push(muestra);
-      newData.porAprobar = newData.porAprobar.filter(m => m.IdMuestra !== idMuestra);
+      if (muestra) {
+        muestra.Estado = 'Devuelta';
+        newData.historial.push(muestra);
+        newData.porAprobar = newData.porAprobar.filter(m => m.IdMuestra !== idMuestra);
+      }
       setData(newData);
     } catch (err) {
       setSubmissionStatus(prev => ({ ...prev, [idMuestra]: "Error al desaprobar" }));
@@ -151,6 +157,11 @@ function ValidadorDashboard() {
                     >
                       Asignar
                     </button>
+                    {submissionStatus[muestra.IdMuestra] && (
+                      <span style={{ marginLeft: 8, fontSize: 12, color: '#1976d2', fontWeight: 500 }}>
+                        {submissionStatus[muestra.IdMuestra]}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -220,28 +231,28 @@ function ValidadorDashboard() {
       <div className="card-list">
         <h2>Historial de Trabajos</h2>
         {data.historial.length > 0 ? (
-    <ul>
-      {data.historial.map((muestra) => (
-        <li key={muestra.IdMuestra} className="list-item">
-          <div className="historial-info">
-            <span>**Cód. Muestra:** {muestra.CodigoUnico}</span>
-            <span>**Tipo:** {muestra.TipoMuestra}</span>
-            <span>**Estado:** {muestra.Estado}</span>
-            {muestra.FechaEmision && (
-              <span>**Fecha Emisión:** {new Date(muestra.FechaEmision).toLocaleDateString()}</span>
-            )}
-            {muestra.Comentarios && (
-              <p>
-                **Comentarios:** {muestra.Comentarios}
-              </p>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p>No hay trabajos en el historial.</p>
-  )}
+          <ul>
+            {data.historial.map((muestra) => (
+              <li key={muestra.IdMuestra} className="list-item">
+                <div className="historial-info">
+                  <span>**Cód. Muestra:** {muestra.CodigoUnico}</span>
+                  <span>**Tipo:** {muestra.TipoMuestra}</span>
+                  <span>**Estado:** {muestra.Estado}</span>
+                  {muestra.FechaEmision && (
+                    <span>**Fecha Emisión:** {new Date(muestra.FechaEmision).toLocaleDateString()}</span>
+                  )}
+                  {muestra.Comentarios && (
+                    <p>
+                      **Comentarios:** {muestra.Comentarios}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No hay trabajos en el historial.</p>
+        )}
       </div>
     </div>
   );

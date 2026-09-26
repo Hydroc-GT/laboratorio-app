@@ -1,61 +1,63 @@
-import axios from "axios";
-import { getCurrentUser } from './authService';
+import api from './api';
 
-const API_URL = "http://localhost:3001/api";
-
-// Función para crear una instancia de Axios con el header de usuario
-const getAuthAxios = () => {
-    const user = getCurrentUser();
-    const config = {
-        headers: {}
-    };
-    
-    if (user && user.usuario) {
-        config.headers['user-id'] = user.usuario.IdUsuario;
-    }
-    
-    return axios.create(config);
-};
-
-// Funciones para el módulo de muestras
+// Módulo de Muestras
 export const registrarMuestra = (muestra) => {
-    return getAuthAxios().post(`${API_URL}/muestras/registrar`, muestra);
+    return api.post('/muestras/registrar', muestra);
 };
 
-export const listarMuestras = () => {
-    return getAuthAxios().get(`${API_URL}/muestras`);
+export const listarMuestras = (solicitanteId = null) => {
+    const url = solicitanteId ? `/muestras?solicitanteId=${solicitanteId}` : '/muestras';
+    return api.get(url);
 };
 
-// Funciones para el módulo de analista
+export const getSiguienteNumeroMuestra = (idTipoMuestra) => {
+    return api.get(`/muestras/siguiente-numero?idTipoMuestra=${idTipoMuestra}`);
+};
+
+export const getUltimoCodigoMuestra = (tipo) => {
+    return api.get(`/muestras/ultimo-codigo?tipo=${encodeURIComponent(tipo)}`);
+};
+
+// Módulo de Solicitantes
+export const listarSolicitantes = () => {
+    return api.get('/solicitantes/listar');
+};
+
+export const registrarSolicitante = (solicitanteData) => {
+    return api.post('/solicitantes/registrar', solicitanteData);
+};
+
+// Módulo de Analista
 export const getMuestrasPorAnalista = (idAnalista) => {
-    return getAuthAxios().get(`${API_URL}/analista/muestras/${idAnalista}`);
+    return api.get(`/analista/muestras/${idAnalista}`);
 };
 
 export const getParametrosPorMuestra = (idMuestra) => {
-    return getAuthAxios().get(`${API_URL}/analista/parametros/${idMuestra}`);
+    return api.get(`/analista/parametros/${idMuestra}`);
 };
 
 export const enviarResultados = (resultadosData) => {
-    return getAuthAxios().post(`${API_URL}/analista/resultados`, resultadosData);
+    return api.post('/analista/resultados', resultadosData);
 };
 
-export const validarToken = (token) => {
-    return getAuthAxios().post(`${API_URL}/analista/validar-token`, { token });
+export const validarTokenQR = (token) => {
+    return api.post('/analista/validar-token', { token });
 };
 
-// Funciones para el módulo de validador
+// Módulo de Validador
 export const getDashboardValidador = () => {
-    return getAuthAxios().get(`${API_URL}/validador/dashboard`);
+    return api.get('/validador/dashboard');
 };
 
 export const asignarAnalista = (asignacionData) => {
-    return getAuthAxios().post(`${API_URL}/validador/asignar-analista`, asignacionData);
+    return api.post('/validador/asignar-analista', asignacionData);
 };
 
 export const aprobarMuestra = (idMuestra) => {
-    return getAuthAxios().post(`${API_URL}/validador/aprobar`, { idMuestra });
+    return api.post('/validador/aprobar', { idMuestra });
 };
 
 export const desaprobarMuestra = (idMuestra, comentarios) => {
-    return getAuthAxios().post(`${API_URL}/validador/desaprobar`, { idMuestra, comentarios });
+    return api.post('/validador/desaprobar', { idMuestra, comentarios });
 };
+

@@ -11,7 +11,7 @@ libre.convertAsync = require('util').promisify(libre.convert);
 const jwt = require('jsonwebtoken');
 
 // Secret key for JWT
-const JWT_SECRET = 'secreto-laboratorio-control-calidad-2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secreto_laboratorio_lims_jwt_key_2025_prod';
 
 // Función para obtener las muestras asignadas a un analista
 exports.getMuestrasPorAnalista = async (req, res) => {
@@ -208,8 +208,33 @@ exports.enviarResultados = async (req, res) => {
         const htmlCertificado = generarCertificadoHTML(muestraData, resultados);
         const finalPdfPath = path.join(__dirname, `../certificados/certificado_${idMuestra}.pdf`);
 
+        const getChromeExecutablePath = () => {
+            if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+                return process.env.CHROME_PATH;
+            }
+            const possiblePaths = [
+                'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+                'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+                'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+                'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+            ];
+            for (const p of possiblePaths) {
+                if (fs.existsSync(p)) return p;
+            }
+            return undefined;
+        };
+
+        const chromePath = getChromeExecutablePath();
+        const launchOptions = {
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        };
+        if (chromePath) {
+            launchOptions.executablePath = chromePath;
+        }
+
         // Generar el PDF usando Puppeteer
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
         await page.setContent(htmlCertificado, { waitUntil: 'networkidle0' });
         await page.pdf({ path: finalPdfPath, format: 'A4' });

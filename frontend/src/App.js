@@ -9,8 +9,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardAnalista from './components/DashboardAnalista';
 import AnalisisForm from './components/AnalisisForm';
 import DashboardValidador from './components/DashboardValidador';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Componente para manejar la visualización del menú de perfil
+// Componente para manejar la visualización del menú de perfil y rutas
 const AppContent = () => {
   const { usuario } = useAuth();
   const location = useLocation();
@@ -20,14 +21,61 @@ const AppContent = () => {
     <div>
       {showProfileMenu && <ProfileMenu />}
       <Routes>
+        {/* Rutas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/register-muestra" element={<RegisterMuestra />} />
-        <Route path="/admin/*" element={<AdminDashboard />} />
+
+        {/* Módulo Recepción / Registro de Muestras (Rol 2 y Rol 1 Admin) */}
+        <Route 
+          path="/register-muestra" 
+          element={
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <RegisterMuestra />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Módulo Analista de Laboratorio (Rol 3 y Rol 1 Admin) */}
+        <Route 
+          path="/analista" 
+          element={
+            <ProtectedRoute allowedRoles={[1, 3]}>
+              <DashboardAnalista />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/analista/analisis/:idMuestra" 
+          element={
+            <ProtectedRoute allowedRoles={[1, 3]}>
+              <AnalisisForm />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Módulo Validador / Supervisor (Rol 4 y Rol 1 Admin) */}
+        <Route 
+          path="/validador" 
+          element={
+            <ProtectedRoute allowedRoles={[1, 4]}>
+              <DashboardValidador />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Módulo Administrador del Sistema (Rol 1 Admin) */}
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedRoute allowedRoles={[1]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Redirección por defecto */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/analista" element={<DashboardAnalista />} />
-         <Route path="/analista/analisis/:idMuestra" element={<AnalisisForm />} />     
-         <Route path="/validador" element={<DashboardValidador />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>
   );

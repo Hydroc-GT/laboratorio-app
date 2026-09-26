@@ -1,6 +1,10 @@
 const { getConnection, sql } = require("../config/db");
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { registrarEvento } = require('../utils/auditoria');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secreto_laboratorio_lims_jwt_key_2025_prod';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 const crearUsuario = async (req, res) => {
     try {
@@ -66,6 +70,18 @@ const loginUsuario = async (req, res) => {
         // Se excluye la contraseña del objeto de respuesta por seguridad
         delete usuario.Contrasena;
         
+        // Generar token JWT con la información del usuario
+        const token = jwt.sign(
+            {
+                idUsuario: usuario.IdUsuario,
+                correo: usuario.Correo,
+                nombre: usuario.Nombre,
+                idRol: usuario.IdRol
+            },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+
         // Registrar en auditoría
         await registrarEvento({
             usuario: usuario.IdUsuario,
@@ -73,7 +89,7 @@ const loginUsuario = async (req, res) => {
             detalles: `Acceso exitoso desde ${req.ip || 'IP desconocida'}`
         });
          
-        res.json({ message: "Inicio de sesión exitoso.", usuario });
+        res.json({ message: "Inicio de sesión exitoso.", usuario, token });
 
     } catch (err) {
         console.error('Error al iniciar sesión:', err);

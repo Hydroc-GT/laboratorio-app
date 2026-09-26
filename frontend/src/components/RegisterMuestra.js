@@ -1,6 +1,6 @@
 // Estado para filtro independiente de solicitante en "Mis Muestras"
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import '../App.css';
 
 const RegisterMuestra = () => {
@@ -29,13 +29,13 @@ const RegisterMuestra = () => {
     const [agregandoSolicitante, setAgregandoSolicitante] = useState(false);
     const [tab, setTab] = useState('registro');
     const [muestras, setMuestras] = useState([]);
-    
+
     useEffect(() => {
-        let url = 'http://localhost:3001/api/muestras';
+        let url = '/muestras';
         if (filtroSolicitante) {
             url += `?solicitanteId=${filtroSolicitante}`;
         }
-        axios.get(url)
+        api.get(url)
             .then(res => setMuestras(res.data))
             .catch(() => setMuestras([]));
     }, [filtroSolicitante, success]);
@@ -52,7 +52,7 @@ const RegisterMuestra = () => {
         else if (form.tipo === 'Alimento') { idTipo = 2; prefijo = 'ALI-'; }
         else if (form.tipo === 'Bebida Alcohólica') { idTipo = 3; prefijo = 'ALC-'; }
         if (idTipo) {
-            axios.get(`http://localhost:3001/api/muestras/siguiente-numero?idTipoMuestra=${idTipo}`)
+            api.get(`/muestras/siguiente-numero?idTipoMuestra=${idTipo}`)
                 .then(res => {
                     setCodigoUnico(prefijo + res.data.siguienteNumero);
                 })
@@ -61,11 +61,9 @@ const RegisterMuestra = () => {
                 });
         }
     }, [form.tipo]);
-    useEffect(() => {
-    // Generar código único automáticamente cuando cambia el tipo
 
-        
-        axios.get('http://localhost:3001/api/solicitantes/listar')
+    useEffect(() => {
+        api.get('/solicitantes/listar')
             .then(res => {
                 setSolicitantes(res.data);
             });
@@ -73,7 +71,7 @@ const RegisterMuestra = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+        setForm({ ...form, [name]: value });
     };
 
     const handleSolicitanteChange = (e) => {
@@ -82,7 +80,20 @@ const RegisterMuestra = () => {
 
     const handleNuevoSolicitante = () => {
         setNuevoSolicitante(true);
-        setForm({ ...form, solicitanteId: '' });
+        setForm(prev => ({ ...prev, solicitanteId: '' }));
+    };
+
+    const handleCancelarNuevoSolicitante = () => {
+        setNuevoSolicitante(false);
+        setSolicitanteData({
+            Nombre: '',
+            TipoSolicitante: '',
+            DocumentoIdentidad: '',
+            Direccion: '',
+            Telefono: '',
+            Correo: ''
+        });
+        setError('');
     };
 
     const handleSolicitanteSelect = (e) => {
@@ -107,7 +118,7 @@ const RegisterMuestra = () => {
         }
 
         try {
-            await axios.post('http://localhost:3001/api/solicitantes/crear', solicitanteData);
+            await api.post('/solicitantes/crear', solicitanteData);
             setSuccess('Solicitante agregado correctamente. Selecciónalo en la lista.');
             setSolicitanteData({
                 Nombre: '',
@@ -119,7 +130,7 @@ const RegisterMuestra = () => {
             });
             setNuevoSolicitante(false);
             // Recargar la lista de solicitantes
-            axios.get('http://localhost:3001/api/solicitantes/listar')
+            api.get('/solicitantes/listar')
                 .then(res => {
                     setSolicitantes(res.data);
                 });
@@ -135,18 +146,18 @@ const RegisterMuestra = () => {
         setSuccess('');
         let idSolicitante = form.solicitanteId;
 
-    // Usar el código único autogenerado
-    const codigoUnicoFinal = codigoUnico;
+        // Usar el código único autogenerado
+        const codigoUnicoFinal = codigoUnico;
 
         try {
             // Si es nuevo solicitante, primero créalo
             if (nuevoSolicitante) {
-                const res = await axios.post('http://localhost:3001/api/solicitantes/crear', solicitanteData);
+                const res = await api.post('/solicitantes/crear', solicitanteData);
                 idSolicitante = res.data.idSolicitante || res.data.IdSolicitante || res.data.insertId;
             }
 
             // Ahora registra la muestra vinculando el idSolicitante
-            await axios.post('http://localhost:3001/api/muestras/registrar', {
+            await api.post('/muestras/registrar', {
                 IdTipoMuestra: tipoMuestraToId(form.tipo),
                 CodigoUnico: codigoUnicoFinal,
                 Origen: form.origen,
@@ -177,13 +188,13 @@ const RegisterMuestra = () => {
     };
 
     const tipoMuestraToId = (tipo) => {
-    switch (tipo) {
-        case 'Agua': return 1;
-        case 'Alimento': return 2;
-        case 'Bebida Alcohólica': return 3;
-        default: return null;
-    }
-};
+        switch (tipo) {
+            case 'Agua': return 1;
+            case 'Alimento': return 2;
+            case 'Bebida Alcohólica': return 3;
+            default: return null;
+        }
+    };
 
     return (
         <div className="form-container">
@@ -192,91 +203,154 @@ const RegisterMuestra = () => {
                 <button type="button" onClick={() => setTab('muestras')} style={{ fontWeight: tab === 'muestras' ? 'bold' : 'normal' }}>Mis Muestras</button>
             </div>
             {tab === 'registro' && (
-            <>
-            <h2>Registro de Muestra</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Tipo:</label>
-                    <select name="tipo" value={form.tipo} onChange={handleChange} required>
-                        <option value="">Seleccione</option>
-                        <option value="Alimento">Alimento</option>
-                        <option value="Agua">Agua</option>
-                        <option value="Bebida Alcohólica">Bebida Alcohólica</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Código único:</label>
-                    <input
-                        type="text"
-                        value={codigoUnico}
-                        disabled
-                        style={{ width: 120, background: '#f6f8fa', border: 'none', color: '#1976d2', fontWeight: 'bold', fontSize: '1.1em' }}
-                        tabIndex={-1}
-                    />
-                </div>
-                <div>
-                    <label>Origen:</label>
-                    <input type="text" name="origen" value={form.origen} onChange={handleChange} required />
-                </div>
-                <div>
-                    <label>Condiciones de transporte y almacenamiento:</label>
-                    <textarea name="condiciones" value={form.condiciones} onChange={handleChange} required />
-                </div>
-                <div>
-                    <label>Solicitante:</label>
-                    <select name="solicitanteId" value={form.solicitanteId} onChange={handleSolicitanteSelect} required={!nuevoSolicitante} disabled={nuevoSolicitante}>
-                        <option value="">Seleccione un solicitante</option>
-                        {solicitantes.map(s => (
-                            <option key={s.IdSolicitante} value={s.IdSolicitante}>{s.Nombre}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <button type="button" onClick={handleNuevoSolicitante} style={{marginTop: 10}}>Nuevo Solicitante</button>
-                </div>
-                {nuevoSolicitante && (
-                    <div style={{border: '1px solid #ccc', padding: 10, marginTop: 10, borderRadius: 6}}>
-                        <h4>Datos del nuevo solicitante</h4>
+                <>
+                    <h2>Registro de Muestra</h2>
+                    <form onSubmit={handleSubmit}>
                         <div>
-                            <label>Nombre:</label>
-                            <input type="text" name="Nombre" value={solicitanteData.Nombre} onChange={handleSolicitanteChange} required />
+                            <label>Tipo:</label>
+                            <select name="tipo" value={form.tipo} onChange={handleChange} required>
+                                <option value="">Seleccione</option>
+                                <option value="Alimento">Alimento</option>
+                                <option value="Agua">Agua</option>
+                                <option value="Bebida Alcohólica">Bebida Alcohólica</option>
+                            </select>
                         </div>
                         <div>
-                            <label>Tipo de Solicitante:</label>
-                            <input type="text" name="TipoSolicitante" value={solicitanteData.TipoSolicitante} onChange={handleSolicitanteChange} required />
+                            <label>Código único:</label>
+                            <input
+                                type="text"
+                                value={codigoUnico}
+                                disabled
+                                style={{ width: 120, background: '#f6f8fa', border: 'none', color: '#1976d2', fontWeight: 'bold', fontSize: '1.1em' }}
+                                tabIndex={-1}
+                            />
                         </div>
                         <div>
-                            <label>Documento Identidad:</label>
-                            <input type="text" name="DocumentoIdentidad" value={solicitanteData.DocumentoIdentidad} onChange={handleSolicitanteChange} required />
+                            <label>Origen:</label>
+                            <input type="text" name="origen" value={form.origen} onChange={handleChange} required />
                         </div>
                         <div>
-                            <label>Dirección:</label>
-                            <input type="text" name="Direccion" value={solicitanteData.Direccion} onChange={handleSolicitanteChange} />
+                            <label>Condiciones de transporte y almacenamiento:</label>
+                            <textarea name="condiciones" value={form.condiciones} onChange={handleChange} required />
                         </div>
                         <div>
-                            <label>Teléfono:</label>
-                            <input type="text" name="Telefono" value={solicitanteData.Telefono} onChange={handleSolicitanteChange} />
+                            <label>Solicitante:</label>
+                            <select name="solicitanteId" value={form.solicitanteId} onChange={handleSolicitanteSelect} required={!nuevoSolicitante} disabled={nuevoSolicitante}>
+                                <option value="">Seleccione un solicitante</option>
+                                {solicitantes.map(s => (
+                                    <option key={s.IdSolicitante} value={s.IdSolicitante}>{s.Nombre}</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
-                            <label>Correo:</label>
-                            <input type="email" name="Correo" value={solicitanteData.Correo} onChange={handleSolicitanteChange} />
+                            {!nuevoSolicitante ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNuevoSolicitante}
+                                    style={{
+                                        marginTop: 10,
+                                        background: '#1976d2',
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '8px 16px',
+                                        borderRadius: 6,
+                                        cursor: 'pointer',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    + Nuevo Solicitante
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleCancelarNuevoSolicitante}
+                                    style={{
+                                        marginTop: 10,
+                                        background: '#757575',
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '8px 16px',
+                                        borderRadius: 6,
+                                        cursor: 'pointer',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    ✕ Cancelar Nuevo Solicitante
+                                </button>
+                            )}
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleAgregarSolicitante}
-                            style={{marginTop: 10, width: '100%'}}
-                            disabled={agregandoSolicitante}
-                        >
-                            {agregandoSolicitante ? 'Agregando...' : 'Agregar'}
-                        </button>
-                    </div>
-                )}
-                {/* Eliminado campo de responsable técnico */}
-                <button type="submit" disabled={nuevoSolicitante}>Registrar Muestra</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {success && <p style={{ color: 'green' }}>{success}</p>}
-            </>
+                        {nuevoSolicitante && (
+                            <div style={{ border: '1px solid #90caf9', background: '#f8fbff', padding: 16, marginTop: 12, borderRadius: 8 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <h4 style={{ margin: 0, color: '#1976d2' }}>Datos del nuevo solicitante</h4>
+
+                                </div>
+                                <div>
+                                    <label>Nombre:</label>
+                                    <input type="text" name="Nombre" value={solicitanteData.Nombre} onChange={handleSolicitanteChange} required />
+                                </div>
+                                <div>
+                                    <label>Tipo de Solicitante:</label>
+                                    <input type="text" name="TipoSolicitante" value={solicitanteData.TipoSolicitante} onChange={handleSolicitanteChange} required />
+                                </div>
+                                <div>
+                                    <label>Documento Identidad:</label>
+                                    <input type="text" name="DocumentoIdentidad" value={solicitanteData.DocumentoIdentidad} onChange={handleSolicitanteChange} required />
+                                </div>
+                                <div>
+                                    <label>Dirección:</label>
+                                    <input type="text" name="Direccion" value={solicitanteData.Direccion} onChange={handleSolicitanteChange} />
+                                </div>
+                                <div>
+                                    <label>Teléfono:</label>
+                                    <input type="text" name="Telefono" value={solicitanteData.Telefono} onChange={handleSolicitanteChange} />
+                                </div>
+                                <div>
+                                    <label>Correo:</label>
+                                    <input type="email" name="Correo" value={solicitanteData.Correo} onChange={handleSolicitanteChange} />
+                                </div>
+                                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                                    <button
+                                        type="button"
+                                        onClick={handleAgregarSolicitante}
+                                        style={{
+                                            flex: 1,
+                                            background: '#1976d2',
+                                            color: '#fff',
+                                            border: 'none',
+                                            padding: '10px',
+                                            borderRadius: 6,
+                                            cursor: 'pointer',
+                                            fontWeight: 600
+                                        }}
+                                        disabled={agregandoSolicitante}
+                                    >
+                                        {agregandoSolicitante ? 'Agregando...' : 'Guardar Solicitante'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelarNuevoSolicitante}
+                                        style={{
+                                            background: '#e0e0e0',
+                                            color: '#333',
+                                            border: 'none',
+                                            padding: '10px 18px',
+                                            borderRadius: 6,
+                                            cursor: 'pointer',
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        {/* Eliminado campo de responsable técnico */}
+                        <button type="submit" disabled={nuevoSolicitante}>Registrar Muestra</button>
+                    </form>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                </>
             )}
             {tab === 'muestras' && (
                 <div style={{ minHeight: 500, minWidth: 800, padding: 32, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>

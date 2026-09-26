@@ -62,12 +62,12 @@ exports.desaprobarMuestra = async (req, res) => {
         // Auditoría: registrar evento de devolución/desaprobación
         try {
             const { registrarEvento } = require('../utils/auditoria');
-            // Obtener usuario desde JWT si está disponible
-            let usuario = null;
-            if (req.headers.authorization) {
+            // Obtener usuario desde req.user (middleware) o token
+            let usuario = req.user ? (req.user.correo || req.user.idUsuario) : null;
+            if (!usuario && req.headers.authorization) {
                 try {
                     const token = req.headers.authorization.split(' ')[1];
-                    const decoded = jwt.verify(token, 'secreto-laboratorio-control-calidad-2025');
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secreto_laboratorio_lims_jwt_key_2025_prod');
                     usuario = decoded.correo || decoded.idUsuario || null;
                 } catch (e) {
                     usuario = null;

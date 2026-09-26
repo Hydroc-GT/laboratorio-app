@@ -1,30 +1,42 @@
-import axios from 'axios';
+import api from './api';
 
-// Asegúrate de que este sea el puerto de tu backend
-const API_URL = 'http://localhost:3001/api/auth'; 
-
-// El registro ahora incluye el rol
+// El registro incluye el rol
 export const register = async (userData) => {
-    // userData debe ser un objeto como { nombre, correo, contrasena, idRol }
-    const response = await axios.post(`${API_URL}/register`, userData);
+    // userData debe ser un objeto como { Nombre, Correo, Contrasena, IdRol }
+    const response = await api.post('/auth/register', userData);
     return response.data;
 };
 
 export const login = async (credentials) => {
-    // credentials debe ser un objeto como { correo, contrasena }
-    const response = await axios.post(`${API_URL}/login`, credentials);
-    // Guarda el token en localStorage para mantener la sesión
-    if (response.data.token) {
+    // credentials: { Correo, Contrasena }
+    const response = await api.post('/auth/login', credentials);
+    if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
         localStorage.setItem('user', JSON.stringify(response.data));
     }
     return response.data;
 };
 
 export const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
     localStorage.removeItem('user');
 };
 
 export const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('user'));
+    const raw = localStorage.getItem('usuario') || localStorage.getItem('user');
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed.usuario ? parsed.usuario : parsed;
+    } catch (e) {
+        return null;
+    }
 };
+
+export const getCurrentToken = () => {
+    return localStorage.getItem('token');
+};
+
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../assets/styles/Analista/Dashboard.css';
 import { useAuth } from '../context/AuthContext';
+import { getMuestrasPorAnalista } from '../services/muestras';
 
 function AnalistaDashboard() {
   const [muestrasPorAnalizar, setMuestrasPorAnalizar] = useState([]);
@@ -13,7 +13,7 @@ function AnalistaDashboard() {
   const { usuario } = useAuth();
 
   // Obtener el ID del analista del contexto de autenticación
-  const idAnalista = usuario?.IdUsuario;
+  const idAnalista = usuario?.IdUsuario || usuario?.idUsuario;
 
   useEffect(() => {
     const fetchMuestras = async () => {
@@ -24,9 +24,9 @@ function AnalistaDashboard() {
       }
 
       try {
-        const response = await axios.get(`http://localhost:3001/api/analista/muestras/${idAnalista}`);
-        setMuestrasPorAnalizar(response.data.porAnalizar);
-        setHistorialMuestras(response.data.historial);
+        const response = await getMuestrasPorAnalista(idAnalista);
+        setMuestrasPorAnalizar(response.data.porAnalizar || []);
+        setHistorialMuestras(response.data.historial || []);
       } catch (err) {
         setError("No se pudieron cargar las muestras.");
       } finally {
@@ -50,17 +50,17 @@ function AnalistaDashboard() {
         {muestrasPorAnalizar.length > 0 ? (
           <ul>
             {muestrasPorAnalizar.map((muestra) => (
-                <li key={muestra.IdMuestra} className="list-item">
-                  <span>{muestra.CodigoUnico} - {muestra.TipoMuestra}</span>
-                  {muestra.Comentarios && (
-                    <span className="comentario">
-                      (Comentario del Validador: {muestra.Comentarios})
-                    </span>
-                  )}
-                  <button onClick={() => handleAnalizarClick(muestra.IdMuestra)}>
-                    Analizar
-                  </button>
-                </li>
+              <li key={muestra.IdMuestra} className="list-item">
+                <span>{muestra.CodigoUnico} - {muestra.TipoMuestra}</span>
+                {muestra.Comentarios && (
+                  <span className="comentario">
+                    (Comentario del Validador: {muestra.Comentarios})
+                  </span>
+                )}
+                <button onClick={() => handleAnalizarClick(muestra.IdMuestra)}>
+                  Analizar
+                </button>
+              </li>
             ))}
           </ul>
         ) : (
